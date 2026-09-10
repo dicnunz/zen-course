@@ -1,15 +1,12 @@
 name: probe transfer
 on:
-  push:
-    paths:
-      - '.github/workflows/probe.yml'
+  pull_request:
 permissions:
   contents: read
 jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - name: Inspect transfer page
         run: |
           python - <<'PY'
