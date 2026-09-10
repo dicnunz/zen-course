@@ -1,0 +1,35 @@
+name: probe transfer
+on:
+  push:
+    paths:
+      - '.github/workflows/probe.yml'
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect transfer page
+        run: |
+          python - <<'PY'
+          import re, urllib.request
+          url = 'https://firestorage.ai/ja/f/ZNBeFP81QxRh'
+          req = urllib.request.Request(url, headers={'User-Agent':'Mozilla/5.0'})
+          with urllib.request.urlopen(req, timeout=30) as r:
+              body = r.read()
+              print('status', r.status)
+              print('final', r.geturl())
+              print('content-type', r.headers.get('content-type'))
+              print('content-disposition', r.headers.get('content-disposition'))
+              print('bytes', len(body), 'magic', body[:8])
+          text = body.decode('utf-8', 'replace')
+          for line in text.splitlines():
+              low = line.lower()
+              if any(k in low for k in ('download', 'zen-course', 'file_id', 'public_id', 'href=', 'api/')):
+                  print(line[:3000])
+          print('urls')
+          for u in re.findall(r'https?://[^\"\'<>\\s]+', text):
+              if any(k in u.lower() for k in ('download','file','api','storage')):
+                  print(u[:3000])
+          PY
